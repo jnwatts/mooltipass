@@ -72,6 +72,7 @@ CFLAGS += $(foreach def,$(DEFINES),$(def:%=-D%))
 all: $(TARGET).hex $(TARGET).eep $(TARGET).lss size
 
 BETATESTERS_SETUP: CFLAGS += -DBETATESTERS_SETUP
+BETATESTERS_SETUP: CFLAGS += -DALUMINUM_CASE
 BETATESTERS_SETUP: all
 
 # Use the --mcu and --format=avr options if they are supported by the local
