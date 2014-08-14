@@ -68,12 +68,16 @@ endif
 # Add all defines, each prefixed with -D.
 CFLAGS += $(foreach def,$(DEFINES),$(def:%=-D%))
 
-.PHONY: all BETATESTERS_SETUP
+.PHONY: all BETATESTERS_SETUP BETATESTERS_SETUP_PIN
 all: $(TARGET).hex $(TARGET).eep $(TARGET).lss size
 
 BETATESTERS_SETUP: CFLAGS += -DBETATESTERS_SETUP
 BETATESTERS_SETUP: CFLAGS += -DALUMINUM_CASE
 BETATESTERS_SETUP: all
+
+BETATESTERS_SETUP_PIN: CFLAGS += -DBETATESTERS_SETUP_PIN
+BETATESTERS_SETUP_PIN: CFLAGS += -DALUMINUM_CASE
+BETATESTERS_SETUP_PIN: all
 
 # Use the --mcu and --format=avr options if they are supported by the local
 # avr-size program.
