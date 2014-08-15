@@ -100,7 +100,6 @@ void guiGetBackToCurrentScreen(void)
 void guiScreenLoop(uint8_t touch_detect_result)
 {
     uint8_t state_machine_val = currentScreen;
-    uint8_t lastScreen = currentScreen;
     
     // If no press, you can return!
     if (!(touch_detect_result & TOUCH_PRESS_MASK))
@@ -133,6 +132,9 @@ void guiScreenLoop(uint8_t touch_detect_result)
             // User approved his pin
             currentScreen = SCREEN_DEFAULT_INSERTED_NLCK;
         }
+        
+        // Go to the new screen
+        guiGetBackToCurrentScreen();
     }
     else
     {
@@ -143,12 +145,14 @@ void guiScreenLoop(uint8_t touch_detect_result)
                 // User wants to lock his mooltipass
                 currentScreen = SCREEN_DEFAULT_INSERTED_LCK;
                 guiHandleSmartcardRemoved();
+                guiGetBackToCurrentScreen();
                 break;
             }
             case (SCREEN_DEFAULT_INSERTED_NLCK|TOUCHPOS_WHEEL_TRIGHT) :
             {
                 // User wants to go to the settings menu
                 currentScreen = SCREEN_SETTINGS;
+                guiGetBackToCurrentScreen();
                 break;
             }
             case (SCREEN_SETTINGS|TOUCHPOS_WHEEL_BRIGHT) :
@@ -167,12 +171,14 @@ void guiScreenLoop(uint8_t touch_detect_result)
                     guiDisplayInformationOnScreen(PSTR("Failed!"));
                 }
                 userViewDelay();
+                guiGetBackToCurrentScreen();
                 break;
             }
             case (SCREEN_SETTINGS|TOUCHPOS_WHEEL_TLEFT) :
             {
                 // User wants to go to the main menu
                 currentScreen = SCREEN_DEFAULT_INSERTED_NLCK;
+                guiGetBackToCurrentScreen();
                 break;
             }
             case (SCREEN_SETTINGS|TOUCHPOS_WHEEL_TRIGHT) :
@@ -204,15 +210,12 @@ void guiScreenLoop(uint8_t touch_detect_result)
                 {
                     currentScreen = SCREEN_DEFAULT_INSERTED_LCK;
                 }
+                guiGetBackToCurrentScreen();
                 break;
             }
             default : break;
         }
     }    
-    if (currentScreen != lastScreen)
-    {
-        guiGetBackToCurrentScreen();
-    }
 }
 
 /*! \fn     guiDisplayProcessingScreen(void)
