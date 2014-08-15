@@ -164,6 +164,9 @@ upload: $(TARGET).hex
 	dfu-programmer atmega32u4 erase
 	dfu-programmer atmega32u4 flash $<
 
+rebase:
+	[ -z "$(git describe --always --dirty | grep dirty)" ] && git checkout master && git rebase remotes/limpkin/master && git checkout MooltiCATS && git rebase master && git push origin master MooltiCATS -f
+
 
 clean:
 	-rm -f $(OBJECTS) $(OBJECTS:.o=.d) $(TARGET).hex $(TARGET).eep $(TARGET).lss $(TARGET).elf
