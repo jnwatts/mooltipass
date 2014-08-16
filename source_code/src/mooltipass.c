@@ -84,8 +84,28 @@ int main(void)
     RET_TYPE touch_init_result;
     RET_TYPE card_detect_ret;
     
-    // Check if we were resetted and want to go to the bootloader
+    bool jumpToBootloader = false;
+
+    disableJTAG();
     if (eeprom_read_word((uint16_t*)EEP_BOOTKEY_ADDR) == BOOTLOADER_BOOTKEY)
+    {
+        jumpToBootloader = true;
+    }
+#ifdef AVR_BOOTLOADER_PROGRAMMING
+    else
+    {
+        DDR_SC_DET &= ~(1 << PORTID_SC_DET);
+        PORT_SC_DET |= (1 << PORTID_SC_DET);
+        for (uint16_t i = 0; i < 2000; i++) asm volatile ("NOP");
+        #if defined(HARDWARE_V1)
+        if (PIN_SC_DET & (1 << PORTID_SC_DET))
+        #elif defined(HARDWARE_OLIVIER_V1)
+        if (!(PIN_SC_DET & (1 << PORTID_SC_DET)))
+        #endif
+        jumpToBootloader = true;
+    }
+#endif
+    if (jumpToBootloader)
     {
         // Disable WDT
         wdt_reset();
@@ -98,24 +118,7 @@ int main(void)
         start_bootloader();
     }
 
-    /* Check if a card is inserted in the Mooltipass to go to the bootloader */
-    #ifdef AVR_BOOTLOADER_PROGRAMMING
-        disableJTAG();
-        DDR_SC_DET &= ~(1 << PORTID_SC_DET);
-        PORT_SC_DET |= (1 << PORTID_SC_DET);
-        for (uint16_t i = 0; i < 2000; i++) asm volatile ("NOP");
-        #if defined(HARDWARE_V1)
-        if (PIN_SC_DET & (1 << PORTID_SC_DET))
-        #elif defined(HARDWARE_OLIVIER_V1)
-        if (!(PIN_SC_DET & (1 << PORTID_SC_DET)))
-        #endif
-        {
-            start_bootloader();
-        }
-    #endif
-
     CPU_PRESCALE(0);                    // Set for 16MHz clock
-    disableJTAG();                      // Disable JTAG to gain access to pins
     initPortSMC();                      // Initialize smart card port
     initPwm();                          // Initialize PWM controller
     initIRQ();                          // Initialize interrupts
