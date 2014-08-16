@@ -84,18 +84,13 @@ uint16_t guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parent
         temp_conf_text.line4 = (char*)c->login;
         
         // Prompt user for confirmation
-        if(guiAskForConfirmation(4, &temp_conf_text) == RETURN_OK)
+        if(guiAskForConfirmation(4, &temp_conf_text) != RETURN_OK)
         {
-            // Get back to other screen
-            guiGetBackToCurrentScreen();
-            return temp_child_address;
+            temp_child_address = NODE_ADDR_NULL;
         }
-        else
-        {
-            // Get back to other screen
-            guiGetBackToCurrentScreen();
-            return NODE_ADDR_NULL;
-        }
+        // Get back to other screen
+        guiGetBackToCurrentScreen();
+        return temp_child_address;
     }
     else
 #endif
