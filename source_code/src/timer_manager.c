@@ -98,7 +98,7 @@ void activateTimer(uint8_t uid, uint16_t val)
 }
 
 /*!	\fn		timerBasedDelayMs(uint16_t ms)
-*	\brief	Timer based ms delay
+*	\brief	Delay for ms to ms+1 milliseconds
 *   \param  ms  Number of ms
 */
 void timerBasedDelayMs(uint16_t ms)
