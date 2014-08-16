@@ -36,7 +36,7 @@
 #include "usb.h"
 #include "gui.h"
 
-
+#ifdef TESTS_ENABLED
 /*! \fn     beforeFlashInitTests(void)
 *   \brief  Test functions launched before flash init
 */
@@ -275,3 +275,4 @@ void afterHadLogoDisplayTests(void)
     oledWriteActiveBuffer();
     #endif
 }
+#endif // TESTS_ENABLED
