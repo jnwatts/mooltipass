@@ -130,17 +130,13 @@ int main(void)
     spiUsartBegin(SPI_RATE_8_MHZ);      // Start USART SPI at 8MHz
 
     // Launch the before flash initialization tests
-    #ifdef TESTS_ENABLED
-        beforeFlashInitTests();
-    #endif
+    beforeFlashInitTests();
     
     // Check if we can initialize the Flash memory
     flash_init_result = initFlash();
     
     // Launch the after flash initialization tests
-    #ifdef TESTS_ENABLED
-        afterFlashInitTests();
-    #endif
+    afterFlashInitTests();
     
     // Set up OLED now that USB is receiving full 500mA.
     oledBegin(FONT_DEFAULT);
@@ -173,9 +169,7 @@ int main(void)
     touch_init_result = initTouchSensing();
     
     // Launch the after touch initialization tests
-    #ifdef TESTS_ENABLED
-        afterTouchInitTests();
-    #endif
+    afterTouchInitTests();
     
     // Test procedure to check that all HW is working
     //#define HW_TEST_PROC
@@ -244,9 +238,7 @@ int main(void)
     guiGetBackToCurrentScreen();
         
     // Launch the after HaD logo display tests
-    #ifdef TESTS_ENABLED
-        afterHadLogoDisplayTests();  
-    #endif
+    afterHadLogoDisplayTests();
     
     // Let's fade in the LEDs
     for (uint16_t i = 0; i < MAX_PWM_VAL; i++)
