@@ -32,6 +32,8 @@
 #include "gui.h"
 
 
+#define USE_CONFIRM_SCREEN_FOR_SINGLE_CREDENTIAL
+
 /*! \fn     guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parentNodeAddress)
 *   \brief  Ask for user login selection / approval
 *   \param  h                   Pointer to management handle
@@ -69,6 +71,7 @@ uint16_t guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parent
         return NODE_ADDR_NULL;
     }
     
+#ifdef USE_CONFIRM_SCREEN_FOR_SINGLE_CREDENTIAL // Saves 68 bytes
     // Check if there's only one child, that's a confirmation screen
     if (c->nextChildAddress == NODE_ADDR_NULL)
     {
@@ -95,6 +98,7 @@ uint16_t guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parent
         }
     }
     else
+#endif
     {
         uint8_t action_chosen = FALSE;
         
