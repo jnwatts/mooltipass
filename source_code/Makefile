@@ -13,6 +13,7 @@ OBJDUMP := $(CROSS)objdump
 SIZE    := $(CROSS)size
 AR      := $(CROSS)ar
 AS      := $(CROSS)as
+NM      := $(CROSS)nm
 
 # Mooltipass version: vMAJOR.MINOR
 VERSION := v0.1
@@ -96,6 +97,9 @@ CFLAGS += -DMOOLTIPASS_VERSION="\"$(VERSION)\""
 .PHONY: size
 size: $(TARGET).elf
 	$(SIZE) $(SIZEFLAGS) $<
+
+analyze: $(TARGET).elf
+	$(NM) --size-sort -t decimal $<
 
 test:
 	echo "build $(build)"
