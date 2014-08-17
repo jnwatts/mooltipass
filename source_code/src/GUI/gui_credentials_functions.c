@@ -34,6 +34,16 @@
 
 #define USE_CONFIRM_SCREEN_FOR_SINGLE_CREDENTIAL
 
+//TODO: These should be moved to a suitable common location
+#define SCREEN_MARGIN_Y 4
+#define SCREEN_MARGIN_X 0
+#define SCREEN_HEIGHT 64
+#define SCREEN_WIDTH 256
+#define SCREEN_MAX_Y SCREEN_HEIGHT - 1
+#define SCREEN_MAX_X SCREEN_WIDTH - 1
+#define LINE_HEIGHT 12
+
+
 /*! \fn     guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parentNodeAddress)
 *   \brief  Ask for user login selection / approval
 *   \param  h                   Pointer to management handle
@@ -108,22 +118,18 @@ uint16_t guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parent
             
             // Clear led_mask
             led_mask = 0;
-            
+
             // List logins on screen
-            while ((temp_child_address != NODE_ADDR_NULL) && (i != 4))
+            while ((temp_child_address != NODE_ADDR_NULL) && (i < 4))
             {
                 // Read child node to get login
                 if (readChildNode(h, c, temp_child_address) != RETURN_OK)
                 {
                     return NODE_ADDR_NULL;
                 }
-                
-                // Print login on screen
+
                 if (i == 0)
                 {
-                    //oledPutstrXY(72, 0, OLED_RIGHT, (char*)c->login);
-                    oledPutstrXY(0, 4, OLED_LEFT, (char*)c->login);
-                    
                     // Cover left arrow if there's no predecessor
                     if (c->prevChildAddress == NODE_ADDR_NULL)
                     {
@@ -131,34 +137,29 @@ uint16_t guiAskForLoginSelect(mgmtHandle* h, pNode* p, cNode* c, uint16_t parent
                         oledFillXY(60, 24, 22, 18, 0x00);
                     }
                 }
-                else if (i == 1)
-                {
-                    //oledPutstrXY(184, 0, OLED_LEFT, (char*)c->login);
-                    oledPutstrXY(255, 4, OLED_RIGHT, (char*)c->login);
-                }
-                else if (i == 2)
-                {
-                    //oledPutstrXY(72, 54, OLED_RIGHT, (char*)c->login);
-                    oledPutstrXY(0, 48, OLED_LEFT, (char*)c->login);
-                }
-                else
-                {
-                    //oledPutstrXY(184, 54, OLED_LEFT, (char*)c->login);
-                    oledPutstrXY(255, 48, OLED_RIGHT, (char*)c->login);
-                }
-                
+
+                // Print login on screen
+                int leftRight = (i & 0x01);
+                int topBot = ((i >> 1) & 0x01);
+                oledPutstrXY(
+                        /* X */ SCREEN_MAX_X*leftRight, // 0, MAX_X
+                        /* Y */ (SCREEN_HEIGHT - LINE_HEIGHT)*(topBot) + SCREEN_MARGIN_Y*(1-(2*topBot)), // MARGIN_Y, HEIGHT - LINE_HEIGHT - MARGIN_Y
+                        /* Orienation */ leftRight, // OLED_LEFT == 0, OLED_RIGHT == 1
+                        (char*)c->login);
+
                 // Store address in array, fetch next address
                 addresses[i] = temp_child_address;
                 temp_child_address = c->nextChildAddress;
                 i++;
             }
-            
+
             // Update led_mask & bitmap
-            if ((i != 4) || (c->nextChildAddress == NODE_ADDR_NULL))
+            if ((i < 4) || (c->nextChildAddress == NODE_ADDR_NULL))
             {
                 led_mask |= LED_MASK_RIGHT;
                 oledFillXY(174, 24, 22, 18, 0x00);
             }
+
             for (j = i; j < 4; j++)
             {
                 led_mask |= (1 << j);
