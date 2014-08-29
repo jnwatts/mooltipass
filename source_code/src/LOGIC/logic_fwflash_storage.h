@@ -28,8 +28,6 @@
 
 #include "defines.h"
 
-// Defines
-#define BITMAP_ID_OFFSET        64
 // String IDs
 #define ID_STRING_PROCESSING    0
 #define ID_STRING_CARD_BLOCKED  1

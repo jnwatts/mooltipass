@@ -29,8 +29,6 @@
 #ifndef ANIM_H_
 #define ANIM_H_
 
-#include "logic_fwflash_storage.h"
-
 #define FRAME_SIDES           0
 #define FRAME_TICK_CROSS      1
 #define FRAME_YES_NO          2

@@ -42,22 +42,19 @@ parser = OptionParser(usage = '''usage: %prog [options] bitmap1 bitmap2 font1 bi
           other files are stored as bitmaps''')
 parser.add_option('-o', '--output', help='name of output bundle file', dest='output', default='bundle.img')
 parser.add_option('-i', '--input', help='name of input bundle file', dest='input', default='')
-parser.add_option('-s', '--strings', help='include these strings at head of bundle', dest='strings', default=None)
 parser.add_option('-t', '--test', help='On input: list contents of input bundle. On output: Don\'t actually write to disk', dest='test_bundle', action='store_true', default=False)
 parser.add_option('-5', '--md5', help='Print md5sum of bundle and each file', dest='show_md5', action='store_true', default=False)
 
 (options, args) = parser.parse_args()
 
-if len(options.input) > 0 and options.strings:
-    parser.error("Error: Can't add strings when expanding a bundle")
-
 MEDIA_BITMAP = 1
 MEDIA_FONT   = 2
-RESERVED_IDS = 64
+MEDIA_STRING = 3
 
 MEDIA_TYPE_NAMES = {
     MEDIA_BITMAP: 'bmap',
     MEDIA_FONT: 'font',
+    MEDIA_STRING: 'string',
 }
 
 def imageTypeToString(imageType):
@@ -66,35 +63,44 @@ def imageTypeToString(imageType):
     else:
         return "unkn"
 
-def buildBundle(bundlename, stringFile, files, test_bundle=False, show_md5=False):
-    strings = []
-    if stringFile:
-        with open(stringFile) as fd:
-            for line in fd:
-                strings.append(line.strip())
-
-    if len(strings) > RESERVED_IDS:
-        print 'Error: {} strings is more than the {} supported'.format(len(strings), RESERVED_IDS)
-        return
-
+def buildBundle(bundlename, files, test_bundle=False, show_md5=False):
     data = []
-    header = array('H')             		# unsigned short array (uint16_t)
-    header.append(RESERVED_IDS + len(files))
-    reserve = RESERVED_IDS*2 + 2*len(files) + 2      	# leave room for the header
+
+    tmpfiles = [];
+    for filename in files:
+        if 'fw_strings' in filename:
+            fd = open(filename, 'r')
+            for string in fd.readlines():
+                tmpfiles.append('string://{}'.format(string.strip()))
+            fd.close()
+        elif 'font' in filename:
+            tmpfiles.append('font://{}'.format(filename));
+        else:
+            tmpfiles.append('bmap://{}'.format(filename));
+    files = tmpfiles;
+
+    header = array('H')             # unsigned short array (uint16_t)
+    header.append(len(files))
+    reserve = 2*len(files) + 2      # leave room for the header
     size = reserve
-	
-	#temp append while storing the string in flash
-    for string,index in zip(strings,range(len(strings))):
-        print '    0x{:04x}: size {:4} bytes, string[{}] = "{}"'.format(size,len(string)+1, index, string)
-        header.append(size)
-        size += len(string) + 1     # +1 for null terminator
-
-    for i in range(len(strings),RESERVED_IDS):
-        header.append(0)
-
-    for filename,index in zip(files,range(len(files))):
-        fd = open(filename, 'rb')
-        image = fd.read()
+            
+    numStrings = 0;
+    for filename in files:
+        if 'string://' in filename:
+            image = bytearray(filename.replace('string://','').strip());
+            imageType = MEDIA_STRING;
+            print 'STRING #{}'.format(numStrings);
+            numStrings = numStrings + 1;
+        else:
+            if 'font://' in filename:
+                imageType = MEDIA_FONT;
+            elif 'bmap://' in filename:
+                imageType = MEDIA_BITMAP;
+            else:
+                raise Exception("Unexpected filename: {}".format(filename));
+            fd = open(filename.replace('{}://'.format(imageTypeToString(imageType)),''), 'rb')
+            image = fd.read()
+            fd.close()
 
         imageHash = ''
         if show_md5:
@@ -102,18 +108,13 @@ def buildBundle(bundlename, stringFile, files, test_bundle=False, show_md5=False
             m.update(image)
             imageHash = m.hexdigest()
 
-        imageType = array('H')
-        if 'font' in filename:
-            imageType.append(MEDIA_FONT)
-            print '    0x{:04x}: size {:4} bytes, font[{}] {} {}'.format(size,len(image)+2, index, filename, imageHash)
-        else:
-            imageType.append(MEDIA_BITMAP)
-            print '    0x{:04x}: size {:4} bytes, bmap[{}] {} {}'.format(size,len(image)+2, index, filename, imageHash)
+        print '    0x{:04x}: size {} bytes, {} {}'.format(size,len(image)+2, filename, imageHash)
 
         header.append(size)
         size += len(image) + 2      # 2 bytes for type prefix
-        data.append((filename, imageType,image))
-        fd.close()
+        imageTypeArray = array('H');
+        imageTypeArray.append(imageType);
+        data.append((filename, imageType, image))
     print 'total size: {}'.format(size-reserve)
 
     if not test_bundle:
@@ -121,15 +122,9 @@ def buildBundle(bundlename, stringFile, files, test_bundle=False, show_md5=False
         bfd = open(bundlename,  "wb")
         header.tofile(bfd)
         offset = 0
-
-        # Strings first
-        for string in strings:
-            bfd.write(string)
-            bfd.write(pack('B', 0)) # null terminated
-
         for filename,imageType,image in data:
-            #print '    0x{:04x}: {} {}'.format(offset, imageType, image)
-            imageType.tofile(bfd)
+            #print '    0x{:04x}: {} {}'.format(offset, imageType, ''.join('{:02x}'.format(x) for x in bytearray(image)))
+            bfd.write(pack('H', imageType))
             bfd.write(image)
             offset += len(image)+2
         bfd.close()
@@ -208,7 +203,7 @@ def main():
     if len(options.input) > 0:
         expandBundle(options.output, args, test_bundle=options.test_bundle, show_md5=options.show_md5)
     else:
-        buildBundle(options.output, options.strings, args, test_bundle=options.test_bundle, show_md5=options.show_md5)
+        buildBundle(options.output, args, test_bundle=options.test_bundle, show_md5=options.show_md5)
 
 if __name__ == "__main__":
     main()
