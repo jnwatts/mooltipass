@@ -25,6 +25,7 @@
 #include <string.h>
 #include "smart_card_higher_level_functions.h"
 #include "touch_higher_level_functions.h"
+#include "logic_fwflash_storage.h"
 #include "gui_screen_functions.h"
 #include "gui_basic_functions.h"
 #include "defines.h"

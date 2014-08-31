@@ -23,6 +23,7 @@
 *    Author:   Mathieu Stephan
 */
 #include "touch_higher_level_functions.h"
+#include "logic_fwflash_storage.h"
 #include "gui_screen_functions.h"
 #include "gui_basic_functions.h"
 #include "node_mgmt.h"
