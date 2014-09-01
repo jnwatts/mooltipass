@@ -701,27 +701,6 @@ uint8_t oledGetOffset(void)
 }
 
 
-/**
- * Return the address of the media file for the specified file id.
- * @param fileId index of the media file to read
- * @param addr pointer to address to fill
- * @returns -1 on error, else 0 for success
- */
-int16_t oledGetFileAddr(uint8_t fileId, uint16_t *addr)
-{
-    if (getStoredFileAddr((uint16_t)fileId, addr) == RETURN_NOK)
-    {
-        return -1;
-    }
-    
-#ifdef OLED_DEBUG
-    usbPrintf_P(PSTR("oledGetFileAddr file %d addr 0x%04x\n"), fileId, *addr);
-#endif
-
-    return 0;
-}
-
-
 #ifdef OLED_DEBUG1
 /**
  * Dump current font debug.
@@ -760,7 +739,7 @@ static void oledDumpFont(void)
  */
 int8_t oledSetFont(uint8_t fontIndex)
 {
-    if (oledGetFileAddr(fontIndex, &oledFontAddr) != 0)
+    if (getStoredFileAddr(fontIndex, &oledFontAddr) != 0)
     {
 #ifdef OLED_DEBUG
         usbPrintf_P(PSTR("oled failed to set font %d\n"),fontIndex);
@@ -1516,7 +1495,7 @@ int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, uint8_t fileId, uint8_t options
         return animFrameDraw(x, y, fileId-0x80, options);
     }
 
-    if (oledGetFileAddr(fileId, &addr) != 0)
+    if (getStoredFileAddr(fileId, &addr) != 0)
     {
         return -1;
     }
