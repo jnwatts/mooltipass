@@ -328,7 +328,7 @@ RET_TYPE addNewContext(uint8_t* name, uint8_t length)
     }
     
     // Prepare domain approval screen
-    conf_text.lines[0] = readStoredStringToBuffer(ID_STRING_CONF_NEWCREDS);
+    conf_text.lines[0] = readStoredStringToBuffer(STRING_CONF_NEWCREDS);
     conf_text.lines[1] = (char*)name;
     
     // Ask for user approval
@@ -452,9 +452,9 @@ RET_TYPE setLoginForContext(uint8_t* name, uint8_t length)
         else
         {
             // Prepare confirmation screen
-            conf_text.lines[0] = readStoredStringToBuffer(ID_STRING_ADDUSERNAME);
+            conf_text.lines[0] = readStoredStringToBuffer(STRING_ADDUSERNAME);
             conf_text.lines[1] = (char*)name;
-            conf_text.lines[2] = readStoredStringToBuffer(ID_STRING_ON);
+            conf_text.lines[2] = readStoredStringToBuffer(STRING_ON);
             conf_text.lines[3] = (char*)temp_pnode.service;
             
             // If doesn't exist, ask user for confirmation to add to flash
@@ -507,9 +507,9 @@ RET_TYPE setPasswordForContext(uint8_t* password, uint8_t length)
         fillArrayWithRandomBytes(temp_cnode.password + length, NODE_CHILD_SIZE_OF_PASSWORD - length);
         
         // Prepare password changing approval text
-        conf_text.lines[0] = readStoredStringToBuffer(ID_STRING_CHANGEPASSFOR);
+        conf_text.lines[0] = readStoredStringToBuffer(STRING_CHANGEPASSFOR);
         conf_text.lines[1] = (char*)temp_cnode.login;
-        conf_text.lines[2] = readStoredStringToBuffer(ID_STRING_ON);
+        conf_text.lines[2] = readStoredStringToBuffer(STRING_ON);
         conf_text.lines[3] = (char*)temp_pnode.service;
         
         // Ask for password changing approval
@@ -597,13 +597,13 @@ void favoritePickingLogic(void)
         readChildNode(&temp_cnode, pickedChild);
         
         // Ask the user if he wants to output the login
-        if (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(ID_STRING_ENTERLOGINQ)) == RETURN_OK)
+        if (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(STRING_ENTERLOGINQ)) == RETURN_OK)
         {
             usbKeybPutStr((char*)temp_cnode.login);
         }
         
         // Ask the user if he wants to output the login
-        if (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(ID_STRING_ENTERPASSQ)) == RETURN_OK)
+        if (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(STRING_ENTERPASSQ)) == RETURN_OK)
         {
             decryptTempCNodePasswordAndClearCTVFlag();
             usbKeybPutStr((char*)temp_cnode.password);

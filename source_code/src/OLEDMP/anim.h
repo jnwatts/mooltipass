@@ -29,25 +29,12 @@
 #ifndef ANIM_H_
 #define ANIM_H_
 
+#include "file_ids.h"
+
 #define FRAME_SIDES           0
 #define FRAME_TICK_CROSS      1
 #define FRAME_YES_NO          2
 #define FRAME_PIN_ENTRY       3
-
-// Bitmaps that oledBitmapDrawFlash() can show
-#define BITMAP_HAD            0
-#define BITMAP_LOGIN          1
-#define BITMAP_LEFT           2
-#define BITMAP_RIGHT          3
-#define BITMAP_TICK           4
-#define BITMAP_CROSS          5
-#define BITMAP_INFO           6
-#define BITMAP_INSERT         9
-#define BITMAP_MAIN_SCREEN    10
-#define BITMAP_SETTINGS_SC    11
-#define BITMAP_LEFT_ARROW     12
-#define BITMAP_RIGHT_ARROW    13
-#define BITMAP_PIN_LINES      14
 
 // These bitmaps are built from frames
 #define BITMAP_SIDES          (0x80+FRAME_SIDES)

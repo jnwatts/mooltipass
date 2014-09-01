@@ -85,7 +85,7 @@ void guiGetBackToCurrentScreen(void)
         }
         case SCREEN_DEFAULT_INSERTED_INVALID :
         {
-            guiDisplayInformationOnScreen(ID_STRING_REMOVE_CARD);
+            guiDisplayInformationOnScreen(STRING_REMOVE_CARD);
             break;
         }
         case SCREEN_SETTINGS :
@@ -167,17 +167,17 @@ void guiScreenLoop(uint8_t touch_detect_result)
             case (SCREEN_SETTINGS|TOUCHPOS_WHEEL_BLEFT) :
             {
                 // User wants to delete his profile in flash / eeprom....
-                if ((guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(ID_STRING_AREYOUSURE)) == RETURN_OK) && (removeCardAndReAuthUser() == RETURN_OK) && (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(ID_STRING_AREYOURLSURE)) == RETURN_OK))
+                if ((guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(STRING_AREYOUSURE)) == RETURN_OK) && (removeCardAndReAuthUser() == RETURN_OK) && (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(STRING_AREYOURLSURE)) == RETURN_OK))
                 {
                     uint8_t currentuserid = getCurrentUserID();
                     deleteCurrentUserFromFlash();
                     eraseSmartCard();
                     
                     // Erase other smartcards
-                    while (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(ID_STRING_OTHECARDFUSER)) == RETURN_OK)
+                    while (guiAskForConfirmation(1, (confirmationText_t*)readStoredStringToBuffer(STRING_OTHECARDFUSER)) == RETURN_OK)
                     {
                         // Ask the user to insert other smartcards
-                        guiDisplayInformationOnScreen(ID_STRING_INSERT_OTHER);
+                        guiDisplayInformationOnScreen(STRING_INSERT_OTHER);
                         
                         // Wait for the user to remove and enter another smartcard
                         while (isCardPlugged() != RETURN_JRELEASED);
@@ -219,7 +219,7 @@ void guiScreenLoop(uint8_t touch_detect_result)
                 else
                 {
                     currentScreen = SCREEN_DEFAULT_INSERTED_LCK;
-                    guiDisplayInformationOnScreen(ID_STRING_FAILED);
+                    guiDisplayInformationOnScreen(STRING_FAILED);
                 }
                 userViewDelay();
                 guiGetBackToCurrentScreen();
@@ -247,12 +247,12 @@ void guiScreenLoop(uint8_t touch_detect_result)
                         // User successfully entered a new pin
                         writeSecurityCode(pin_code);
                         // Inform of success
-                        guiDisplayInformationOnScreen(ID_STRING_PIN_CHANGED);
+                        guiDisplayInformationOnScreen(STRING_PIN_CHANGED);
                     }
                     else
                     {
                         // Inform of fail
-                        guiDisplayInformationOnScreen(ID_STRING_PIN_NCGHANGED);
+                        guiDisplayInformationOnScreen(STRING_PIN_NCGHANGED);
                     }
                     userViewDelay();
                 }
@@ -278,7 +278,7 @@ RET_TYPE guiAskForNewPin(uint16_t* new_pin)
     uint16_t other_pin;
     
     // Ask the user twice for the new pin and compare them
-    if ((guiGetPinFromUser(new_pin, ID_STRING_NEW_PINQ) == RETURN_OK) && (guiGetPinFromUser(&other_pin, ID_STRING_CONF_PIN) == RETURN_OK) && (*new_pin == other_pin))
+    if ((guiGetPinFromUser(new_pin, STRING_NEW_PINQ) == RETURN_OK) && (guiGetPinFromUser(&other_pin, STRING_CONF_PIN) == RETURN_OK) && (*new_pin == other_pin))
     {
         return RETURN_OK;
     }
@@ -293,7 +293,7 @@ RET_TYPE guiAskForNewPin(uint16_t* new_pin)
 */
 void guiDisplayProcessingScreen(void)
 {
-    guiDisplayInformationOnScreen(ID_STRING_PROCESSING);
+    guiDisplayInformationOnScreen(STRING_PROCESSING);
 }
 
 /*! \fn     guiDisplayInformationOnScreen(uint8_t stringID)

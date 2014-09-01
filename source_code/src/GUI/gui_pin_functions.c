@@ -194,7 +194,7 @@ RET_TYPE guiCardUnlockingProcess(void)
     
     while (1)
     {
-        if (guiGetPinFromUser(&temp_pin, ID_STRING_INSERT_PIN) == RETURN_OK)
+        if (guiGetPinFromUser(&temp_pin, STRING_INSERT_PIN) == RETURN_OK)
         {            
             // Try unlocking the smartcard
             temp_rettype = mooltipassDetectedRoutine(temp_pin);
@@ -208,20 +208,20 @@ RET_TYPE guiCardUnlockingProcess(void)
                 }
                 case RETURN_MOOLTIPASS_0_TRIES_LEFT :
                 {
-                    guiDisplayInformationOnScreen(ID_STRING_CARD_BLOCKED);
+                    guiDisplayInformationOnScreen(STRING_CARD_BLOCKED);
                     userViewDelay();
                     return RETURN_NOK;
                 }
                 case RETURN_MOOLTIPASS_PB :
                 {
-                    guiDisplayInformationOnScreen(ID_STRING_PB_CARD);
+                    guiDisplayInformationOnScreen(STRING_PB_CARD);
                     userViewDelay();
                     return RETURN_NOK;
                 }
                 default :
                 {
                     // Both the enum and the defines allow us to do that
-                    guiDisplayInformationOnScreen(ID_STRING_WRONGPIN1LEFT + temp_rettype - RETURN_MOOLTIPASS_1_TRIES_LEFT);
+                    guiDisplayInformationOnScreen(STRING_WRONGPIN1LEFT + temp_rettype - RETURN_MOOLTIPASS_1_TRIES_LEFT);
                     userViewDelay();
                     break;
                 }

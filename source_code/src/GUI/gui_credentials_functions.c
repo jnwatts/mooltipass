@@ -87,9 +87,9 @@ uint16_t guiAskForLoginSelect(pNode* p, cNode* c, uint16_t parentNodeAddress)
         confirmationText_t temp_conf_text;
         
         // Prepare asking confirmation screen
-        temp_conf_text.lines[0] = readStoredStringToBuffer(ID_STRING_CONFACCESSTO);
+        temp_conf_text.lines[0] = readStoredStringToBuffer(STRING_CONFACCESSTO);
         temp_conf_text.lines[1] = (char*)p->service;
-        temp_conf_text.lines[2] = readStoredStringToBuffer(ID_STRING_WITHTHISLOGIN);
+        temp_conf_text.lines[2] = readStoredStringToBuffer(STRING_WITHTHISLOGIN);
         temp_conf_text.lines[3] = (char*)c->login;
         
         // Prompt user for confirmation
