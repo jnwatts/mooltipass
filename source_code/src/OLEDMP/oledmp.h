@@ -127,10 +127,6 @@
 #define OLED_WIDTH			256
 #define OLED_HEIGHT			64
 
-/* Media file types */
-#define MEDIA_BITMAP		1
-#define MEDIA_FONT		2
-
 
 // Text line justification options
 enum {
