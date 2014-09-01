@@ -43,7 +43,7 @@ RET_TYPE getStoredFileAddr(uint16_t fileId, uint16_t* addr)
 {
     uint16_t fileCount;
 
-    flashRawRead((uint8_t*)&fileCount, GRAPHIC_ZONE_START, sizeof(fileCount));
+    flashRawRead((uint8_t*)&fileCount, GRAPHIC_ZONE_START + FILE_ID_COUNT_OFFSET, sizeof(fileCount));
 
     // Invalid file index or flash not formatted
     if ((fileId >= fileCount) || (fileCount == 0xFFFF))
@@ -51,7 +51,7 @@ RET_TYPE getStoredFileAddr(uint16_t fileId, uint16_t* addr)
         return RETURN_NOK;
     }
 
-    flashRawRead((uint8_t*)addr, GRAPHIC_ZONE_START + fileId * sizeof(uint16_t) + sizeof(uint16_t), sizeof(*addr));
+    flashRawRead((uint8_t*)addr, GRAPHIC_ZONE_START + FILE_ID_INDEX_OFFSET + fileId * FILE_ID_INDEX_ENTRY_SIZE, sizeof(*addr));
     *addr += GRAPHIC_ZONE_START;
     
     return RETURN_OK;

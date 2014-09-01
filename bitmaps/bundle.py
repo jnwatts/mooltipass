@@ -21,6 +21,7 @@
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
+# Portions Copyright 2014 Josh Watts (josh [at] sroz dot net)
 
 
 #
@@ -30,180 +31,144 @@
 # Note: fonts are expected to have the word "font" in their filename
 #
 
-import os
-import sys
-import md5
-from optparse import OptionParser
-from struct import *
+import os;
+import sys;
+import md5;
+import yaml;
+from optparse import OptionParser;
+from struct import pack,unpack;
 from array import array
 
-parser = OptionParser(usage = '''usage: %prog [options] bitmap1 bitmap2 font1 bitmap3 font2
-    note: a filename that contains word "font" will be stored as a font
-          other files are stored as bitmaps''')
-parser.add_option('-o', '--output', help='name of output bundle file', dest='output', default='bundle.img')
-parser.add_option('-i', '--input', help='name of input bundle file', dest='input', default='')
-parser.add_option('-t', '--test', help='On input: list contents of input bundle. On output: Don\'t actually write to disk', dest='test_bundle', action='store_true', default=False)
-parser.add_option('-5', '--md5', help='Print md5sum of bundle and each file', dest='show_md5', action='store_true', default=False)
+from PyMooltipass.Bundle import *;
 
+parser = OptionParser(usage = '''usage: %prog [options] [zero or more resource file]
+
+- One of --create, --enum, --list, or --extract must be given.
+- If no resource file is given, --file must specify a valid bundle file to extract or list
+- Each resource file may contain any or all types of files: bitmaps and fonts may be in separate files, and/or bitmaps may be brought in from multiple files.
+- --file accepts - as STDIN or STDOUT depending on mode
+
+Example YAML formatted resource file:
+
+{
+    "bmap":
+    [
+        ["BITMAP_NAME", "bitmap_filename.img"],
+    ],
+    "font":
+    [
+        ["FONT_NAME", "font_filename.img"],
+    ],
+    "string":
+    [
+        ["STRING_NAME", "Some string text..."],
+    ],
+} ''');
+
+parser.add_option('-f', '--file', help='name of bundle file to operate on (default: -)', dest='filename', default='-')
+parser.add_option('-c', '--create', help='create mode', action='store_true', dest='create_mode', default=False);
+parser.add_option('-e', '--enum', help='enum mode', action='store_true', dest='enum_mode', default=False)
+parser.add_option('-x', '--extract', help='extract mode', action='store_true', dest='extract_mode', default=False);
+parser.add_option('-t', '--list', help='list mode', action='store_true', dest='list_mode', default=False);
+parser.add_option('-d', '--depends', help='dependency mode', action='store_true', dest='depends_mode', default=False);
+parser.add_option('-v', '--verbose', help='verbosely list files', dest='verbose', action='store_true', default=False);
+parser.add_option('-5', '--md5', help='list md5sum for entries in bundle', dest='show_md5', action='store_true', default=False);
 (options, args) = parser.parse_args()
 
-MEDIA_BITMAP = 1
-MEDIA_FONT   = 2
-MEDIA_STRING = 3
+MODE_INVALID = 0
+MODE_CREATE = 1
+MODE_ENUM = 2
+MODE_EXTRACT = 3
+MODE_LIST = 4
+MODE_DEPENDS = 5
 
-MEDIA_TYPE_NAMES = {
-    MEDIA_BITMAP: 'bmap',
-    MEDIA_FONT: 'font',
-    MEDIA_STRING: 'string',
-}
+def readResourceFile(filename):
+    fd = open(filename, 'r');
+    result = yaml.load(fd);
+    fd.close();
+    return result;
 
-def imageTypeToString(imageType):
-    if imageType in MEDIA_TYPE_NAMES:
-        return MEDIA_TYPE_NAMES[imageType]
+def createBundle(options, args):
+    bundle = Bundle(verbose=options.verbose, calculateHash=options.show_md5);
+
+    for filename in args:
+        resources = readResourceFile(filename);
+        
+        # Extract version from resource file, keep highest number found
+        if 'version' in resources:
+            if resources['version'] > bundle.getVersion():
+                bundle.setVersion(resources['version']);
+
+        # Extract media files from resource file
+        for mediaType in getMediaTypeNames():
+            if mediaType in resources:
+                for name, filename in resources[mediaType]:
+                    #print "{}: {} -> {}\n".format(mediaType, name, filename);
+                    bundle.addFile(mediaType, name, filename);
+
+    if len(bundle) <= 0:
+        raise Exception('Cowardly refusing to create empty bundle');
+
+    if options.filename == '-':
+        fd = sys.stdout;
     else:
-        return "unkn"
+        fd = open(options.filename, 'w');
 
-def buildBundle(bundlename, files, test_bundle=False, show_md5=False):
-    data = []
+    if options.create_mode:
+        # Write bundle to file
+        bundle.tofile(fd);
+    elif options.enum_mode:
+        # Write enum to file
+        fd.write(bundle.toEnumString());
 
-    tmpfiles = [];
-    for filename in files:
-        if 'fw_strings' in filename:
-            fd = open(filename, 'r')
-            for string in fd.readlines():
-                tmpfiles.append('string://{}'.format(string.strip()))
-            fd.close()
-        elif 'font' in filename:
-            tmpfiles.append('font://{}'.format(filename));
-        else:
-            tmpfiles.append('bmap://{}'.format(filename));
-    files = tmpfiles;
+    if not options.filename == '-':
+        fd.close();
 
-    header = array('H')             # unsigned short array (uint16_t)
-    header.append(len(files))
-    reserve = 2*len(files) + 2      # leave room for the header
-    size = reserve
-            
-    numStrings = 0;
-    for filename in files:
-        if 'string://' in filename:
-            image = bytearray(filename.replace('string://','').strip());
-            imageType = MEDIA_STRING;
-            print 'STRING #{}'.format(numStrings);
-            numStrings = numStrings + 1;
-        else:
-            if 'font://' in filename:
-                imageType = MEDIA_FONT;
-            elif 'bmap://' in filename:
-                imageType = MEDIA_BITMAP;
-            else:
-                raise Exception("Unexpected filename: {}".format(filename));
-            fd = open(filename.replace('{}://'.format(imageTypeToString(imageType)),''), 'rb')
-            image = fd.read()
-            fd.close()
+    return 0;
 
-        imageHash = ''
-        if show_md5:
-            m = md5.new()
-            m.update(image)
-            imageHash = m.hexdigest()
-
-        print '    0x{:04x}: size {} bytes, {} {}'.format(size,len(image)+2, filename, imageHash)
-
-        header.append(size)
-        size += len(image) + 2      # 2 bytes for type prefix
-        imageTypeArray = array('H');
-        imageTypeArray.append(imageType);
-        data.append((filename, imageType, image))
-    print 'total size: {}'.format(size-reserve)
-
-    if not test_bundle:
-        print 'Writing to {}'.format(bundlename)
-        bfd = open(bundlename,  "wb")
-        header.tofile(bfd)
-        offset = 0
-        for filename,imageType,image in data:
-            #print '    0x{:04x}: {} {}'.format(offset, imageType, ''.join('{:02x}'.format(x) for x in bytearray(image)))
-            bfd.write(pack('H', imageType))
-            bfd.write(image)
-            offset += len(image)+2
-        bfd.close()
-        if show_md5:
-            bfd = open(bundlename,  "rb")
-            m = md5.new()
-            data = bfd.read(512)
-            while len(data) > 0:
-                m.update(data)
-                data = bfd.read(512)
-            print "{} {}".format(bundlename, m.hexdigest())
-            bfd.close()
-        print 'wrote {} bytes to {}'.format(size-reserve, bundlename)
-
-def expandBundle(bundlename, args, test_bundle=False, show_md5=False):
-    bfd = open(bundlename, 'rb')
-
-    if show_md5:
-        m = md5.new()
-        data = bfd.read(512)
-        while len(data) > 0:
-            m.update(data)
-            data = bfd.read(512)
-        print "{} {}".format(bundlename, m.hexdigest())
-        bfd.seek(0)
-
-
-    file_count = unpack('H', bfd.read(2))[0]
-    file_offsets = array('H')
-    file_offsets.fromfile(bfd, file_count)
-    bundle_len = os.path.getsize(bundlename)
-    file_offsets.append(bundle_len)
-
-    imageIndex = 0
-    for o in range(len(file_offsets)-1):
-        imageBegin = file_offsets[o]
-        imageEnd = file_offsets[o+1]
-        imageLen = imageEnd - imageBegin
-
-        bfd.seek(file_offsets[o])
-        imageType = unpack('H', bfd.read(2))[0]
-        imageData = bfd.read(imageLen - 2)
-        imageName = '{}_{}.img'.format(imageIndex, imageTypeToString(imageType))
-
-        if show_md5:
-            m = md5.new()
-            m.update(imageData)
-            imageHash = m.hexdigest()
-        else:
-            imageHash = ''
-
-        print '    0x{:04x}: size {} bytes, {} {} {}'.format(imageBegin, imageLen, imageTypeToString(imageType), imageName, imageHash)
-        if not test_bundle:
-            fd = open(imageName, 'wb')
-            fd.write(imageData)
-            fd.close
-        imageIndex += 1
-
-    bfd.close()
-
-def sortObjects(a,b):
-    if '_' in a and '_' in b:
-        ai = int(a.split('_')[0])
-        bi = int(b.split('_')[0])
-        if (ai < bi):
-            return -1
-        elif (ai == bi):
-            return 0
-        else:
-            return 1
-    else:
-        return cmp(a,b)
 
 def main():
-    args.sort(cmp=sortObjects);
-    if len(options.input) > 0:
-        expandBundle(options.output, args, test_bundle=options.test_bundle, show_md5=options.show_md5)
-    else:
-        buildBundle(options.output, args, test_bundle=options.test_bundle, show_md5=options.show_md5)
+    result = 0;
+    mode = MODE_INVALID;
+    mode_count = 0;
+
+    if options.create_mode:
+        mode = MODE_CREATE;
+        mode_count += 1;
+    if options.extract_mode:
+        mode = MODE_EXTRACT;
+        mode_count += 1;
+    if options.list_mode:
+        mode = MODE_LIST;
+        mode_count += 1;
+    if options.enum_mode:
+        mode = MODE_ENUM;
+        mode_count += 1;
+    if options.depends_mode:
+        mode = MODE_DEPENDS;
+        mode_count += 1;
+
+    # Validate selected mode
+    if mode_count == 0:
+        result = 1;
+        raise Exception("One of --create, --enum, --extract, --list or --depends must be specified");
+    if mode_count > 1:
+        result = 1;
+        raise Exception("Only one of --create, --enum, --extract, --list or --depends must be specified");
+
+    # Perform selected action
+    if mode == MODE_CREATE or mode == MODE_ENUM:
+        result = createBundle(options, args);
+    elif mode == MODE_EXTRACT:
+        result = 1;
+        raise Exception("--extract is not yet implemented");
+    elif mode == MODE_LIST:
+        result = 1;
+        raise Exception("--list is not yet implemented");
+    elif mode == MODE_DEPENDS:
+        result = createDepends(options, args);
+
+    return result;
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main());

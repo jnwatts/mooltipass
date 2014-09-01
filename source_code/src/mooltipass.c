@@ -139,6 +139,8 @@ int main(void)
     #ifdef TESTS_ENABLED
         afterFlashInitTests();
     #endif
+
+    //TODO(josh@sroz.net): Check bundle version in flash, if invalid then report (backup font/image?) and go into loop waiting for bundle upload via USB
     
     // Set up OLED now that USB is receiving full 500mA.
     oledBegin(FONT_DEFAULT);
