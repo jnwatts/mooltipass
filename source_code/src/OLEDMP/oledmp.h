@@ -36,6 +36,7 @@
 #include <avr/pgmspace.h>
 #include <spi.h>
 
+#include "file_ids.h"
 #include "fonts.h"
 #include "bitmap.h"
 #include "bitstream.h"
@@ -135,7 +136,7 @@ enum {
     OLED_CENTRE = 2
 } justify_e;
 
-void oledBegin(uint8_t font);
+void oledBegin(FileId_t font);
 void oledInit(void);
 void oledWriteCommand(uint8_t reg);
 void oledWriteData(uint8_t data);
@@ -155,9 +156,8 @@ void oledOn(void);
 #define OLED_SCROLL_DOWN	2
 #define OLED_RAM_BITMAP		4
 
-int16_t oledGetFileAddr(uint8_t fileId, uint16_t *addr);
 void oledBitmapDrawRaw(uint8_t x, uint8_t y, bitstream_t *bs, uint8_t options);
-int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, uint8_t fileId, uint8_t options);
+int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, FileId_t fileId, uint8_t options);
 #ifdef OLED_FEATURE_PGM_MEMORY
 void oledBitmapDraw(uint8_t x, uint8_t y, const void *image, uint8_t options);
 #endif

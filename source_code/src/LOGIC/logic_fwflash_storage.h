@@ -27,9 +27,10 @@
 #define LOGIC_FWFLASH_STORAGE_H_
 
 #include "defines.h"
+#include "file_ids.h"
 
 // Prototypes
-RET_TYPE getStoredFileAddr(uint16_t fileId, uint16_t* addr);
+RET_TYPE getStoredFileAddr(FileId_t fileId, uint16_t* addr);
 char* readStoredStringToBuffer(uint8_t stringID);
 
 #endif /* LOGIC_FWFLASH_STORAGE_H_ */

@@ -22,6 +22,7 @@
  *  Copyright [2014] [Mathieu Stephan]
  */
 #include <stdint.h>
+#include "logic_fwflash_storage.h"
 #include "flash_mem.h"
 #include "node_mgmt.h"
 #include "defines.h"
@@ -33,13 +34,13 @@ uint8_t textBuffer2[TEXTBUFFERSIZE];
 uint8_t* curTextBufferPtr = textBuffer1;
 
 
-/*!	\fn		getStoredFileAddr(uint16_t fileId, uint16_t* addr)
+/*!	\fn		getStoredFileAddr(FileId_t fileId, uint16_t* addr)
 *	\brief	Get the flash address of a stored file
 *   \param  fileId  File ID
 *   \param  addr    Where to store the address
 *   \return RETURN_OK or RETURN_NOK
 */
-RET_TYPE getStoredFileAddr(uint16_t fileId, uint16_t* addr)
+RET_TYPE getStoredFileAddr(FileId_t fileId, uint16_t* addr)
 {
     uint16_t fileCount;
 
@@ -57,18 +58,18 @@ RET_TYPE getStoredFileAddr(uint16_t fileId, uint16_t* addr)
     return RETURN_OK;
 }
 
-/*!	\fn		readStoredStringToBuffer(uint8_t stringID, uint8_t* buffer)
+/*!	\fn		readStoredStringToBuffer(FileId_t stringID, uint8_t* buffer)
 *	\brief	Read a Flash stored string in a buffer and return the pointer to this buffer (2 buffers implemented)
 *   \param  stringID    String ID
 *   \return Pointer to the buffer
 */
-char* readStoredStringToBuffer(uint8_t stringID)
+char* readStoredStringToBuffer(FileId_t stringID)
 {
     uint8_t* ret_val = curTextBufferPtr;
     uint16_t temp_addr;
     
     // Get address in flash
-    if ((getStoredFileAddr((uint16_t)stringID, &temp_addr) == RETURN_OK) && (temp_addr != 0x0000))
+    if ((getStoredFileAddr(stringID, &temp_addr) == RETURN_OK) && (temp_addr != 0x0000))
     {
         // We can read more chars...
         flashRawRead(ret_val, temp_addr, TEXTBUFFERSIZE);

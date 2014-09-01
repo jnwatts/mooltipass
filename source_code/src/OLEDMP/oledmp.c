@@ -121,9 +121,9 @@ static struct
     uint16_t pixels;
 } gddram[OLED_HEIGHT*2];
 
-#define FONT_NONE   255
+#define FONT_NONE   (FileId_t)(-1)
 
-static uint8_t fontId=FONT_NONE;         //*< Current font index in SPI flash
+static FileId_t fontId=FONT_NONE;         //*< Current font index in SPI flash
 static uint16_t oledFontAddr;            //*< Address of current font in SPI flash
 static uint16_t oledFontPage;            //*< Address of current font in SPI flash
 static uint16_t oledFontOffset;          //*< Address of current font in SPI flash
@@ -737,7 +737,7 @@ static void oledDumpFont(void)
  * Set the font to use
  * @param font - new font to use
  */
-int8_t oledSetFont(uint8_t fontIndex)
+int8_t oledSetFont(FileId_t fontIndex)
 {
     if (getStoredFileAddr(fontIndex, &oledFontAddr) != 0)
     {
@@ -1483,7 +1483,7 @@ void oledBitmapDraw(uint8_t x, uint8_t y, const void *image, uint8_t options)
  *                OLED_SCROLL_DOWN - scroll bitmap down
  *                0 - don't make bitmap active (unless already drawing to active buffer)
  */
-int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, uint8_t fileId, uint8_t options)
+int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, FileId_t fileId, uint8_t options)
 {
     bitstream_t bs;
     bitmap_t bitmap;

@@ -296,11 +296,11 @@ void guiDisplayProcessingScreen(void)
     guiDisplayInformationOnScreen(STRING_PROCESSING);
 }
 
-/*! \fn     guiDisplayInformationOnScreen(uint8_t stringID)
+/*! \fn     guiDisplayInformationOnScreen(FileId_t stringID)
 *   \brief  Display text information on screen
 *   \param  stringID    String ID to display
 */
-void guiDisplayInformationOnScreen(uint8_t stringID)
+void guiDisplayInformationOnScreen(FileId_t stringID)
 {
     oledClear();
     oledPutstrXY(10, 24, OLED_CENTRE, readStoredStringToBuffer(stringID));

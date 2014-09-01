@@ -28,10 +28,11 @@
 #define GUI_SCREEN_FUNCTIONS_H_
 
 #include "defines.h"
+#include "file_ids.h"
 #include "gui.h"
 
 RET_TYPE guiAskForConfirmation(uint8_t nb_args, confirmationText_t* text_object);
-void guiDisplayInformationOnScreen(uint8_t stringID);
+void guiDisplayInformationOnScreen(FileId_t stringID);
 void guiScreenLoop(uint8_t touch_detect_result);
 RET_TYPE guiAskForNewPin(uint16_t* new_pin);
 void guiSetCurrentScreen(uint8_t screen);

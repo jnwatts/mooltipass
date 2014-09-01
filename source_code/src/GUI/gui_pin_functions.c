@@ -63,13 +63,13 @@ void guiDisplayPinOnPinEnteringScreen(uint8_t* current_pin, uint8_t selected_dig
     }
 }
 
-/*! \fn     guiGetPinFromUser(uint16_t* pin_code, uint8_t stringID)
+/*! \fn     guiGetPinFromUser(uint16_t* pin_code, FileId_t stringID)
 *   \brief  Ask the user to enter a PIN
 *   \param  pin_code    Pointer to where to store the pin code
 *   \param  stringID    String ID
 *   \return If the user approved the request
 */
-RET_TYPE guiGetPinFromUser(uint16_t* pin_code, uint8_t stringID)
+RET_TYPE guiGetPinFromUser(uint16_t* pin_code, FileId_t stringID)
 {
     // If we don't need a pin code, send default one
     #if defined(NO_PIN_CODE_REQUIRED) || defined(HARDWARE_V1)
