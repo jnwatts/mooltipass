@@ -33,6 +33,8 @@ uint8_t textBuffer2[TEXTBUFFERSIZE];
 // Pointer to our current free buffer
 uint8_t* curTextBufferPtr = textBuffer1;
 
+bool flashIsValid = false;
+
 
 /*!	\fn		getStoredFileAddr(FileId_t fileId, uint16_t* addr)
 *	\brief	Get the flash address of a stored file
@@ -67,6 +69,12 @@ char* readStoredStringToBuffer(FileId_t stringID)
 {
     uint8_t* ret_val = curTextBufferPtr;
     uint16_t temp_addr;
+
+    if (!flashIsValid)
+    {
+        ret_val[0] = '\0';
+        return (char*)ret_val;
+    }
     
     // Get address in flash
     if ((getStoredFileAddr(stringID, &temp_addr) == RETURN_OK) && (temp_addr != 0x0000))
@@ -86,4 +94,19 @@ char* readStoredStringToBuffer(FileId_t stringID)
     }
     
     return (char*)ret_val;
+}
+
+/*!	\fn		checkBundleVersion(void)
+*	\brief	Reads version number from flash and compares to hard coded
+*   \return RETURN_OK if version numbers match, else RETURN_NOK
+*/
+RET_TYPE checkBundleVersion(void)
+{
+    uint16_t bundleVersion = 0;
+    flashRawRead((uint8_t*)&bundleVersion, GRAPHIC_ZONE_START + FILE_ID_VERSION_OFFSET, sizeof(bundleVersion));
+    flashIsValid = (bundleVersion == FILE_ID_VERSION);
+    if (flashIsValid) {
+        return RETURN_OK;
+    }
+    return RETURN_NOK;
 }

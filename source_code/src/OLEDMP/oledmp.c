@@ -1489,6 +1489,9 @@ int8_t oledBitmapDrawFlash(uint8_t x, uint8_t y, FileId_t fileId, uint8_t option
     bitmap_t bitmap;
     uint16_t addr;
 
+    if (!flashIsValid)
+        return 0;
+
     if (fileId >= 0x80)
     {
         // Treating bitmap file IDs 0x80 and up as frames.

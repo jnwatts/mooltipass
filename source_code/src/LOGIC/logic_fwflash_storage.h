@@ -26,11 +26,15 @@
 #ifndef LOGIC_FWFLASH_STORAGE_H_
 #define LOGIC_FWFLASH_STORAGE_H_
 
+#include <stdbool.h>
 #include "defines.h"
 #include "file_ids.h"
+
+extern bool flashIsValid;
 
 // Prototypes
 RET_TYPE getStoredFileAddr(FileId_t fileId, uint16_t* addr);
 char* readStoredStringToBuffer(uint8_t stringID);
+RET_TYPE checkBundleVersion(void);
 
 #endif /* LOGIC_FWFLASH_STORAGE_H_ */
