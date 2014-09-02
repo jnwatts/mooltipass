@@ -122,6 +122,7 @@ def compressImageRLE(image):
 
     if len(output) & 0x01 != 0:
         output.append(0)
+        count += 1
 
     image['data'] = output
     image['dataSizeBytes'] = count
@@ -156,7 +157,7 @@ def parseGimpHeader(filename):
 
     data = [int(x.strip()) for x in data if x.strip().isdigit()]
     if len(data) == 0:
-        print 'Failed to extract pixel data from {}'.format(imageFile)
+        print 'Failed to extract pixel data from {}'.format(filename)
         sys.exit(1)
 
     dataSizeBytes = len(data)
@@ -204,13 +205,14 @@ def writeMooltipassHeader(filename, imageName, image):
 
     dataSize = image['dataSizeBytes']
     dataSizeWords = dataSize / 2
+    print dataSizeWords
     if flags == 0:
         # When just bitpacked, dataSize is in words
         dataSize = dataSizeWords
     # When RLE compressed, dataSize is in bytes
-
-    if dataSize & 0x01 != 0:
-        raise Exception("dataSize is not word aligned");
+    else:
+        if dataSize & 0x01 != 0:
+            raise Exception("dataSize is not word aligned");
 
     if (filename == "-"):
         fd = sys.stdout
